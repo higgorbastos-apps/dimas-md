@@ -1,0 +1,153 @@
+:root {
+  --bg-primary: #080705;
+  --bg-secondary: #1A1815;
+  --bg-card: #2A2720;
+  --accent: #C9A84C;
+  --accent-hover: #B8973F;
+  --accent-light: rgba(201, 168, 76, 0.15);
+  --text-primary: #F0EDE6;
+  --text-secondary: #B8B5AC;
+  --text-muted: #7A776E;
+  --danger: #E05260;
+  --success: #4CAF50;
+  --border: #3A3730;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  max-width: 680px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3 {
+  font-family: 'Playfair Display', serif;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+/* ============================================ */
+/* POLIMENTO VISUAL DIMAS MD */
+/* ============================================ */
+
+/* Animação de entrada das mensagens */
+@keyframes typeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Cards de quick action com hover 3D */
+.quick-action-card {
+  transform: perspective(500px) rotateY(0deg);
+  transition: all 0.3s ease;
+}
+
+.quick-action-card:hover {
+  transform: perspective(500px) rotateY(5deg) scale(1.03);
+  border-color: var(--accent) !important;
+  box-shadow: 0 8px 24px rgba(201, 168, 76, 0.2);
+}
+
+/* Barra de status no header */
+.header-status-bar {
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--success));
+  animation: statusGlow 2s infinite;
+}
+
+@keyframes statusGlow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Indicador de créditos */
+.credit-indicator {
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  background: var(--bg-card);
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.credit-indicator:hover {
+  border-color: var(--accent);
+}
+
+.credit-indicator.warning {
+  border-color: var(--accent);
+  color: var(--accent);
+  animation: pulse 2s infinite;
+}
+
+.credit-indicator .credit-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.credit-indicator.warning .credit-dot {
+  background: var(--accent);
+  animation: pulse 1s infinite;
+}
+
+/* Input com glow no foco */
+input:focus, textarea:focus {
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.2) !important;
+}
+
+/* Scroll suave */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Melhorias mobile */
+@media (max-width: 480px) {
+  .credit-indicator {
+    bottom: 70px;
+    right: 8px;
+    font-size: 0.65rem;
+  }
+}
