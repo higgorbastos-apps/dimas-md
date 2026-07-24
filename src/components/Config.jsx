@@ -1,14 +1,45 @@
 import React, { useState } from 'react';
 import { X, CheckCircle, AlertCircle } from 'lucide-react';
 import { Storage } from '../utils/storage';
+import { GoogleSheetsAPI } from '../api/googleSheets';
 
 export default function Config({ onClose, onSave }) {
   const [url, setUrl] = useState(Storage.get('url', ''));
+  const [token, setToken] = useState(Storage.get('token', ''));
   const [provider, setProvider] = useState(Storage.get('provider', 'claude'));
   const [codigoSinc, setCodigoSinc] = useState(Storage.get('codigo_sinc', ''));
   const [deviceId] = useState(() => GoogleSheetsAPI.getDeviceId());
-  const [token, setToken] = useState(Storage.get('token', ''));
   const [message, setMessage] = useState(null);
+
+  const handleSave = () => {
+    if (!url || !token) {
+      setMessage({ type: 'error', text: 'Preencha URL e token.' });
+      return;
+    }
+    Storage.setConfig(url, token);
+    Storage.set('provider', provider);
+    setMessage({ type: 'success', text: 'Configuração salva!' });
+    setTimeout(() => onSave(), 1000);
+  };
+
+  const handleTest = async () => {
+    setMessage({ type: 'info', text: 'Testando conexão...' });
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'carregar_dados', token })
+      });
+      const data = await response.json();
+      if (data.error) {
+        setMessage({ type: 'error', text: 'Erro: ' + data.error });
+      } else {
+        setMessage({ type: 'success', text: 'Conexão bem-sucedida!' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Falha: ' + error.message });
+    }
+  };
 
   const handleGerarCodigo = async () => {
     try {
@@ -29,42 +60,6 @@ export default function Config({ onClose, onSave }) {
       setMessage({ type: 'success', text: 'Vinculado! Reinicie o app.' });
     } catch (e) {
       setMessage({ type: 'error', text: 'Erro: ' + e.message });
-    }
-  };
-  const handleSave = () => {
-    Storage.set('provider', provider);
-    if (!url || !token) {
-      setMessage({ type: 'error', text: 'Preencha URL e token.' });
-      return;
-    }
-
-    Storage.setConfig(url, token);
-    setMessage({ type: 'success', text: 'Configuração salva!' });
-    
-    setTimeout(() => {
-      onSave();
-    }, 1000);
-  };
-
-  const handleTest = async () => {
-    setMessage({ type: 'info', text: 'Testando conexão...' });
-    
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'carregar_dados', token })
-      });
-      
-      const data = await response.json();
-      
-      if (data.error) {
-        setMessage({ type: 'error', text: 'Erro: ' + data.error });
-      } else {
-        setMessage({ type: 'success', text: 'Conexão bem-sucedida!' });
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Falha: ' + error.message });
     }
   };
 
@@ -148,6 +143,39 @@ export default function Config({ onClose, onSave }) {
           />
         </div>
 
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+            Motor de IA
+          </label>
+          <select value={provider} onChange={e => setProvider(e.target.value)}
+            style={{ width: '100%', padding: '10px 14px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-primary)', fontSize: '0.9rem' }}>
+            <option value="claude">Claude (Anthropic)</option>
+            <option value="gemini">Gemini (Google)</option>
+            <option value="deepseek">DeepSeek</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+            Sincronização
+          </label>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+            <input
+              type="text"
+              value={codigoSinc}
+              onChange={e => setCodigoSinc(e.target.value)}
+              placeholder="Código"
+              style={{ flex: 1, padding: '10px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-primary)' }}
+            />
+            <button onClick={handleVincular} style={{ padding: '10px 16px', background: 'var(--accent)', color: 'var(--bg-primary)', border: 'none', borderRadius: 'var(--radius)', fontWeight: 600, cursor: 'pointer' }}>
+              Vincular
+            </button>
+          </div>
+          <button onClick={handleGerarCodigo} style={{ width: '100%', padding: '10px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+            Gerar novo código
+          </button>
+        </div>
+
         {message && (
           <div style={{
             padding: '10px',
@@ -170,38 +198,7 @@ export default function Config({ onClose, onSave }) {
             {message.text}
           </div>
         )}
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            Motor de IA
-          </label>
-          <select value={provider} onChange={e => setProvider(e.target.value)}
-            style={{ width: '100%', padding: '10px 14px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-primary)', fontSize: '0.9rem' }}>
-            <option value="claude">Claude (Anthropic)</option>
-            <option value="gemini">Gemini (Google)</option>
-            <option value="deepseek">DeepSeek</option>
-          </select>
-          
-        </div>
-                <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            Sincronização
-          </label>
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-            <input
-              type="text"
-              value={codigoSinc}
-              onChange={e => setCodigoSinc(e.target.value)}
-              placeholder="Código"
-              style={{ flex: 1, padding: '10px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-primary)' }}
-            />
-            <button onClick={handleVincular} style={{ padding: '10px 16px', background: 'var(--accent)', color: 'var(--bg-primary)', border: 'none', borderRadius: 'var(--radius)', fontWeight: 600, cursor: 'pointer' }}>
-              Vincular
-            </button>
-          </div>
-          <button onClick={handleGerarCodigo} style={{ width: '100%', padding: '10px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-secondary)', cursor: 'pointer' }}>
-            Gerar novo código
-          </button>
-        </div>
+
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
             onClick={handleTest}
@@ -232,7 +229,6 @@ export default function Config({ onClose, onSave }) {
               fontSize: '0.9rem'
             }}
           >
-          
             Salvar
           </button>
         </div>
