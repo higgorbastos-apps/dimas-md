@@ -2,6 +2,7 @@
   "name": "Dimas MD - Diretor Musical IA",
   "short_name": "DimasMD",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#080705",
   "theme_color": "#080705",

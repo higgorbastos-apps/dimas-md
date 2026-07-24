@@ -5,9 +5,32 @@ import { Storage } from '../utils/storage';
 export default function Config({ onClose, onSave }) {
   const [url, setUrl] = useState(Storage.get('url', ''));
   const [provider, setProvider] = useState(Storage.get('provider', 'claude'));
+  const [codigoSinc, setCodigoSinc] = useState(Storage.get('codigo_sinc', ''));
+  const [deviceId] = useState(() => GoogleSheetsAPI.getDeviceId());
   const [token, setToken] = useState(Storage.get('token', ''));
   const [message, setMessage] = useState(null);
 
+  const handleGerarCodigo = async () => {
+    try {
+      const data = await GoogleSheetsAPI.gerarCodigo();
+      setCodigoSinc(data.codigo);
+      Storage.set('codigo_sinc', data.codigo);
+      setMessage({ type: 'success', text: 'Código: ' + data.codigo });
+    } catch (e) {
+      setMessage({ type: 'error', text: 'Erro: ' + e.message });
+    }
+  };
+
+  const handleVincular = async () => {
+    if (!codigoSinc) return setMessage({ type: 'error', text: 'Digite um código.' });
+    try {
+      await GoogleSheetsAPI.vincularDispositivos(codigoSinc, deviceId);
+      Storage.set('codigo_sinc', codigoSinc);
+      setMessage({ type: 'success', text: 'Vinculado! Reinicie o app.' });
+    } catch (e) {
+      setMessage({ type: 'error', text: 'Erro: ' + e.message });
+    }
+  };
   const handleSave = () => {
     Storage.set('provider', provider);
     if (!url || !token) {
@@ -157,6 +180,27 @@ export default function Config({ onClose, onSave }) {
             <option value="gemini">Gemini (Google)</option>
             <option value="deepseek">DeepSeek</option>
           </select>
+          
+        </div>
+                <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+            Sincronização
+          </label>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+            <input
+              type="text"
+              value={codigoSinc}
+              onChange={e => setCodigoSinc(e.target.value)}
+              placeholder="Código"
+              style={{ flex: 1, padding: '10px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-primary)' }}
+            />
+            <button onClick={handleVincular} style={{ padding: '10px 16px', background: 'var(--accent)', color: 'var(--bg-primary)', border: 'none', borderRadius: 'var(--radius)', fontWeight: 600, cursor: 'pointer' }}>
+              Vincular
+            </button>
+          </div>
+          <button onClick={handleGerarCodigo} style={{ width: '100%', padding: '10px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+            Gerar novo código
+          </button>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button

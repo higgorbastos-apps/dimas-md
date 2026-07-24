@@ -49,4 +49,10 @@ export class GoogleSheetsAPI {
     }
     return id;
   }
+    static async gerarCodigo() {
+    return this.call('gerar_codigo');
+  }
+  static async vincularDispositivos(codigo, dispositivo) {
+    return this.call('vincular_dispositivos', { codigo, dispositivo });
+  }
 }

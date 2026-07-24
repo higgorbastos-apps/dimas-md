@@ -106,7 +106,7 @@ async function callDeepSeek(system, messages, res) {
       'Authorization': 'Bearer ' + apiKey
     },
     body: JSON.stringify({
-      model: 'deepseek-chat',
+      model: 'deepseek-v4-flash',
       messages: deepseekMessages,
       max_tokens: 4000
     })
